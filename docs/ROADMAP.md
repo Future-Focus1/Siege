@@ -7,7 +7,6 @@ Shipped in this project: the portrait prototype, the builder, three weapons, shi
 - Phone export is not set up. The project is portrait and uses large buttons, but it has not been run on a device.
 - Sounds are short generated noises. This machine has no sound card, so they have not been heard.
 - The defender's aim is a scored sample of angles, not a learned player.
-- A few Godot warnings remain: the camera switches to the physics tick because interpolation is on, and the test process reports leftover physics resources when it quits immediately.
 
 ## Later, not started
 

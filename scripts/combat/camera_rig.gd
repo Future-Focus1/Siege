@@ -8,11 +8,17 @@ var traveling := false
 var _tween: Tween
 
 
-func _ready() -> void:
-	make_current()
-	global_position = home
-	position_smoothing_enabled = false
+func _init() -> void:
+	# Entering the tree makes the camera current before _ready. Interpolation
+	# must already be off, or Godot forces the physics tick and warns.
 	physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
+	process_callback = Camera2D.CAMERA2D_PROCESS_IDLE
+	position_smoothing_enabled = false
+
+
+func _ready() -> void:
+	global_position = home
+	make_current()
 
 
 func add_shake(amount: float) -> void:

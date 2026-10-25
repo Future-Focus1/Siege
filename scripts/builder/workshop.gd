@@ -32,6 +32,8 @@ func _build_camera() -> void:
 	add_child(view)
 	var camera := Camera2D.new()
 	camera.position = Vector2(1280, 1080)
+	camera.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
+	camera.process_callback = Camera2D.CAMERA2D_PROCESS_IDLE
 	add_child(camera)
 	camera.make_current()
 

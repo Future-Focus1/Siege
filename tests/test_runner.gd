@@ -34,6 +34,11 @@ func _run() -> void:
 	_check("destroying the keep core ends the match", await _phys_core_match())
 	_check("a campaign battle keeps two separate towers", await _phys_two_towers())
 	Engine.time_scale = 1.0
+	for child in get_children():
+		child.free()
+	Catalog.clear()
+	await get_tree().process_frame
+	await get_tree().physics_frame
 	if failures.is_empty():
 		print("ALL TESTS PASSED")
 		get_tree().quit(0)
@@ -240,7 +245,10 @@ func _logic_shield() -> bool:
 	shot.position = Vector2(30, 0)
 	var before := shot._damage_scale
 	field.consider(shot)
-	return field.energy == 25.0 and shot._shielded and shot._damage_scale < before
+	var spent: bool = field.energy == 25.0 and shot._shielded and shot._damage_scale < before
+	shot.free()
+	field.free()
+	return spent
 
 
 func _logic_aim() -> bool:
@@ -254,6 +262,7 @@ func _logic_aim() -> bool:
 	var marked := SiegeAi.aim(Vector2(620, 1400), weapon, arena, "easy", "marksman")
 	var easy_bolt := SiegeAi.pick_weapon([Catalog.weapon("heavy_boulder"), weapon], arena, "easy")
 	print("aim easy ", easy.angle, " hard ", hard.angle, " marksman ", marked.angle)
+	arena.free()
 	return String(easy_bolt.impact_behavior) == "pierce" and float(easy.angle) != float(hard.angle) and float(easy.angle) != float(marked.angle)
 
 

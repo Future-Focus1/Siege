@@ -10,6 +10,16 @@ static var encounters: Dictionary = {}
 static var balance: BalanceConfig
 
 
+static func clear() -> void:
+	materials.clear()
+	pieces.clear()
+	weapons.clear()
+	perks.clear()
+	encounters.clear()
+	balance = null
+	_ready = false
+
+
 static func ensure() -> void:
 	if _ready:
 		return
