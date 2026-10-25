@@ -9,6 +9,7 @@ var _damage_scale := 1.0
 var _knock := 100.0
 var _pierces_left := 0
 var _exploded := false
+var _shielded := false
 var _life := 8.0
 var _visual: Polygon2D
 
@@ -76,6 +77,37 @@ func _build_visual(radius: float) -> void:
 	add_child(_visual)
 	if _behavior == "pierce":
 		_visual.rotation = _prev_velocity.angle()
+
+
+func scale_damage(multiplier: float) -> void:
+	_damage_scale *= multiplier
+
+
+func apply_shield(ratio: float) -> void:
+	if _shielded or weapon == null:
+		return
+	_shielded = true
+	match _behavior:
+		"heavy":
+			if ratio > 0.75:
+				_damage_scale *= 0.25
+				linear_velocity *= 0.20
+			else:
+				_damage_scale *= 1.0 - 0.50 * ratio
+				linear_velocity *= 1.0 - 0.35 * ratio
+			_prev_velocity = linear_velocity
+		"explosive":
+			if ratio > 0.30 and not _exploded:
+				_exploded = true
+				call_deferred("_boom", global_position)
+		"pierce":
+			_damage_scale *= 1.0 - 0.15 * ratio
+			linear_velocity *= 1.0 - 0.12 * ratio
+			_prev_velocity = linear_velocity
+		_:
+			_damage_scale *= 1.0 - 0.30 * ratio
+			linear_velocity *= 1.0 - 0.25 * ratio
+			_prev_velocity = linear_velocity
 
 
 func _physics_process(delta: float) -> void:

@@ -8,6 +8,7 @@ const MAX_PULL := 340.0
 const MIN_POWER := 0.18
 
 var weapon: WeaponData
+var speed_scale := 1.0
 var enabled := true
 var aiming := false
 var power := 0.0
@@ -40,8 +41,19 @@ func muzzle_global() -> Vector2:
 	return _arm.to_global(Vector2(96, 0))
 
 
+func pose(angle_deg: float, shot_power: float) -> Dictionary:
+	angle_degrees = clampf(angle_deg, 12.0, 78.0)
+	power = clampf(shot_power, 0.0, 1.0)
+	var rad := deg_to_rad(angle_degrees)
+	launch_dir = Vector2(cos(rad), -sin(rad))
+	_apply_arm()
+	_update_trajectory()
+	aim_changed.emit(angle_degrees, power)
+	return compute_shot()
+
+
 func compute_shot() -> Dictionary:
-	var speed := weapon.launch_speed * lerpf(0.52, 1.0, power)
+	var speed := weapon.launch_speed * speed_scale * lerpf(0.52, 1.0, power)
 	return {
 		"origin": muzzle_global(),
 		"velocity": launch_dir * speed,

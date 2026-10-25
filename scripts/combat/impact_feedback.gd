@@ -5,6 +5,7 @@ static var _slow_until := 0
 
 
 static func burst(parent: Node, at: Vector2, color: Color, amount: int) -> void:
+	Sfx.play("hit")
 	if not _juice() or parent == null or not parent.is_inside_tree():
 		return
 	var particles := CPUParticles2D.new()
@@ -31,7 +32,8 @@ static func burst(parent: Node, at: Vector2, color: Color, amount: int) -> void:
 static func major(camera: CameraRig) -> void:
 	if camera:
 		camera.add_shake(1.0)
-	if not _juice():
+	Sfx.play("collapse")
+	if not Game.allow_slowmo():
 		return
 	Engine.time_scale = 0.32
 	_slow_until = Time.get_ticks_msec() + 480

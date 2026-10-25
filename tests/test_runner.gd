@@ -17,12 +17,22 @@ func _run() -> void:
 	_check("core destruction is a victory for the attacker", _logic_outcome())
 	_check("timeout ties stay ties", _logic_tie())
 	_check("demo layout has no overlapping cells", _logic_layout())
+	_check("campaign layouts and enemy loadouts are legal", _logic_encounters())
+	_check("overlapping placement is rejected", _logic_overlap())
+	_check("an unsupported core is rejected", _logic_unsupported())
+	_check("a save round-trip restores the layout", _logic_save())
+	_check("a heavy loadout is over budget", _logic_loadout())
+	_check("match actions reject unknown weapons and illegal power", _logic_actions())
+	_check("a shield spends energy and weakens a heavy shot", _logic_shield())
+	_check("easy and hard aim are not the same roll", _logic_aim())
+	_check("rapid reload is faster than siege master", _logic_perk_reload())
 	_check("trajectory matches the projectile", await _phys_ballistics())
 	_check("projectile does not pass through a block", await _phys_block())
 	_check("resting contact does not damage blocks", await _phys_rest())
 	_check("one hit does not damage the same block twice", await _phys_once())
 	_check("explosion pushes a nearby body harder than a far one", await _phys_boom())
 	_check("destroying the keep core ends the match", await _phys_core_match())
+	_check("a campaign battle keeps two separate towers", await _phys_two_towers())
 	Engine.time_scale = 1.0
 	if failures.is_empty():
 		print("ALL TESTS PASSED")
@@ -88,6 +98,167 @@ func _logic_tie() -> bool:
 	var outcome := MatchOutcome.new()
 	outcome.note_timeout(0.50, 0.51, 0.02)
 	return outcome.result == "tie"
+
+
+func _logic_encounters() -> bool:
+	var list := Catalog.encounter_list()
+	if list.size() != 5:
+		print("encounter count ", list.size())
+		return false
+	var previous := 0
+	for enc in list:
+		if enc.order <= previous:
+			print("encounter order ", enc.id)
+			return false
+		previous = enc.order
+		var problems := LayoutRules.validate(Layouts.get_layout(enc.layout_id))
+		if not problems.is_empty():
+			print(enc.layout_id, " ", problems)
+			return false
+		var loadout := Loadout.new()
+		loadout.weapon_ids = enc.ai_weapons
+		loadout.perk_id = enc.ai_perk
+		var over := loadout.errors()
+		if not over.is_empty():
+			print(enc.id, " ", over)
+			return false
+	var homestead := LayoutRules.validate(Layouts.homestead())
+	if not homestead.is_empty():
+		print("homestead ", homestead)
+		return false
+	return true
+
+
+func _logic_overlap() -> bool:
+	var lines := PackedStringArray([
+		"small_block,wood,0,0,0",
+		"small_block,stone,0,0,0",
+	])
+	var problems := LayoutRules.edit_errors(lines)
+	var rejected := false
+	for line in problems:
+		if line.begins_with("overlap"):
+			rejected = true
+	return rejected
+
+
+func _logic_unsupported() -> bool:
+	var lines := PackedStringArray(["keep_core,core,3,5,0"])
+	var problems := LayoutRules.validate(lines)
+	var rejected := false
+	for line in problems:
+		if line.contains("not supported") or line.contains("keep core"):
+			rejected = true
+	return rejected
+
+
+func _logic_save() -> bool:
+	var lines := Layouts.homestead()
+	var saved := SaveGame.save_design("Test Keep", lines)
+	if not bool(saved.get("ok", false)):
+		print("save failed ", saved.get("errors", PackedStringArray()))
+		return false
+	var slug := String(saved.get("slug", ""))
+	var loaded := SaveGame.load_design(slug)
+	if not bool(loaded.get("ok", false)):
+		print("load failed")
+		return false
+	var back: PackedStringArray = loaded.get("lines", PackedStringArray())
+	if back.size() != lines.size():
+		return false
+	for i in lines.size():
+		if back[i] != lines[i]:
+			return false
+	var overlap := PackedStringArray([
+		"small_block,wood,0,0,0",
+		"small_block,wood,0,0,0",
+		"keep_core,core,2,2,0",
+	])
+	var refused := SaveGame.save_design("Illegal", overlap)
+	if bool(refused.get("ok", false)):
+		return false
+	var path := "user://siege/designs/%s.json" % slug
+	var file := FileAccess.open(path, FileAccess.WRITE)
+	if file == null:
+		return false
+	file.store_string(JSON.stringify({"version": 99, "kind": "tower_design", "placements": []}))
+	file.close()
+	var tampered := SaveGame.load_design(slug)
+	return not bool(tampered.get("ok", false))
+
+
+func _logic_loadout() -> bool:
+	var heavy := Loadout.new()
+	heavy.weapon_ids = PackedStringArray(["heavy_boulder", "explosive_shot", "piercing_bolt"])
+	heavy.perk_id = "siege_master"
+	if heavy.errors().is_empty():
+		print("expected over budget, cost ", heavy.cost())
+		return false
+	var legal := Loadout.new()
+	legal.weapon_ids = PackedStringArray(["heavy_boulder", "piercing_bolt"])
+	legal.perk_id = "marksman"
+	return legal.errors().is_empty() and legal.cost() <= Catalog.balance.loadout_budget
+
+
+func _logic_actions() -> bool:
+	var clock := MatchState.new()
+	var allowed := PackedStringArray(["heavy_boulder"])
+	var unknown := MatchAction.new()
+	unknown.side = "player"
+	unknown.weapon_id = "fire_pot"
+	unknown.angle = 40.0
+	unknown.power = 0.6
+	if clock.accept(unknown, allowed):
+		return false
+	var too_hard := MatchAction.new()
+	too_hard.side = "player"
+	too_hard.weapon_id = "heavy_boulder"
+	too_hard.angle = 40.0
+	too_hard.power = 1.4
+	if clock.accept(too_hard, allowed):
+		return false
+	var good := MatchAction.new()
+	good.side = "enemy"
+	good.weapon_id = "heavy_boulder"
+	good.angle = 42.0
+	good.power = 0.8
+	good.virtual_time = 9.0
+	if not clock.accept(good, allowed):
+		return false
+	return clock.actions.size() == 1 and clock.events.size() == 1
+
+
+func _logic_shield() -> bool:
+	var field := ShieldField.new()
+	field.energy = 80.0
+	field.capacity = 80.0
+	field.radius = 300.0
+	field.position = Vector2.ZERO
+	var shot := Projectile.new()
+	shot.weapon = Catalog.weapon("heavy_boulder")
+	shot.linear_velocity = Vector2(500, 0)
+	shot.position = Vector2(30, 0)
+	var before := shot._damage_scale
+	field.consider(shot)
+	return field.energy == 25.0 and shot._shielded and shot._damage_scale < before
+
+
+func _logic_aim() -> bool:
+	var weapon := Catalog.weapon("piercing_bolt")
+	var arena := Arena.new()
+	seed(5)
+	var easy := SiegeAi.aim(Vector2(620, 1400), weapon, arena, "easy", "")
+	seed(5)
+	var hard := SiegeAi.aim(Vector2(620, 1400), weapon, arena, "hard", "")
+	seed(5)
+	var marked := SiegeAi.aim(Vector2(620, 1400), weapon, arena, "easy", "marksman")
+	var easy_bolt := SiegeAi.pick_weapon([Catalog.weapon("heavy_boulder"), weapon], arena, "easy")
+	print("aim easy ", easy.angle, " hard ", hard.angle, " marksman ", marked.angle)
+	return String(easy_bolt.impact_behavior) == "pierce" and float(easy.angle) != float(hard.angle) and float(easy.angle) != float(marked.angle)
+
+
+func _logic_perk_reload() -> bool:
+	return PerkRules.reload_scale("rapid_reload") < 1.0 and PerkRules.reload_scale("siege_master") > 1.0 and PerkRules.damage_scale("siege_master") > 1.0 and PerkRules.damage_scale("marksman") < 1.0
 
 
 func _logic_layout() -> bool:
@@ -275,3 +446,29 @@ func _phys_core_match() -> bool:
 	Engine.time_scale = 1.0
 	battle.queue_free()
 	return won
+
+
+func _phys_two_towers() -> bool:
+	Game.suppress_navigation = true
+	Game.mode = "campaign"
+	Game.encounter_id = "timber_outpost"
+	Game.difficulty = "easy"
+	Game.design_lines = Layouts.homestead()
+	Game.loadout_weapons = PackedStringArray(["piercing_bolt"])
+	Game.loadout_perk = "marksman"
+	var siege = load("res://scenes/battle/siege_match.tscn").instantiate()
+	add_child(siege)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	var player_core: StructuralPiece = siege.player_arena.core
+	var enemy_core: StructuralPiece = siege.enemy_arena.core
+	var separated := false
+	if player_core != null and enemy_core != null:
+		separated = enemy_core.global_position.x > player_core.global_position.x + 1000.0
+	var ok: bool = player_core != null and enemy_core != null and separated and not siege.finished and siege.player_arena != siege.enemy_arena
+	print("two towers player=", player_core != null, " enemy=", enemy_core != null, " finished=", siege.finished, " separated=", separated)
+	siege.queue_free()
+	Game.mode = ""
+	Game.encounter_id = ""
+	await get_tree().process_frame
+	return ok

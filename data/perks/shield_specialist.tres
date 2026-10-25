@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="PerkData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/perk_data.gd" id="1_perk"]
+
+[resource]
+script = ExtResource("1_perk")
+id = &"shield_specialist"
+display_name = "Shield Specialist"
+description = "A smaller field that holds more and refills faster."
+cost = 2
+advantage = "Capacity ×1.35, recharge ×1.20"
+drawback = "Radius ×0.90"

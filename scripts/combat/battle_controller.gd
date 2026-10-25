@@ -17,9 +17,21 @@ var _recent_breaks := 0
 var _break_window := 0.0
 
 
+var weapon_choices: Array[WeaponData] = []
+var using_sandbox := false
+
+
 func _ready() -> void:
 	Catalog.ensure()
-	weapon = Catalog.weapon("heavy_boulder")
+	using_sandbox = Game.mode == "sandbox" and Game.design_lines.size() > 0
+	if using_sandbox:
+		for id in Game.loadout_weapons:
+			var choice := Catalog.weapon(String(id))
+			if choice:
+				weapon_choices.append(choice)
+	if weapon_choices.is_empty():
+		weapon_choices.append(Catalog.weapon("heavy_boulder"))
+	weapon = weapon_choices[0]
 	_build_world()
 	_build_hud()
 	_open_aim()
@@ -29,13 +41,18 @@ func _build_world() -> void:
 	arena = Arena.new()
 	add_child(arena)
 	arena.build_ground()
-	arena.spawn_layout(DemoLayout.timber_outpost())
+	if using_sandbox:
+		arena.defender_perk = Game.loadout_perk
+		arena.spawn_layout(Game.design_lines)
+	else:
+		arena.spawn_layout(DemoLayout.timber_outpost())
 	arena.core_lost.connect(_on_core_lost)
 	arena.piece_damaged.connect(_on_piece_damaged)
 	arena.piece_broke.connect(_on_piece_broke)
 	catapult = Catapult.new()
 	catapult.position = Vector2(620, SiegeGrid.GROUND_Y - 120)
 	add_child(catapult)
+	catapult.speed_scale = PerkRules.launch_scale(Game.loadout_perk if using_sandbox else "")
 	catapult.set_weapon(weapon)
 	catapult.fired.connect(_on_fired)
 	catapult.aim_changed.connect(_on_aim_changed)
@@ -48,17 +65,18 @@ func _build_hud() -> void:
 	layer.layer = 20
 	add_child(layer)
 	var panel := PanelContainer.new()
+	panel.anchor_right = 1.0
 	panel.offset_left = 28
-	panel.offset_top = 28
-	panel.offset_right = 1052
-	panel.offset_bottom = 250
+	panel.offset_top = 48
+	panel.offset_right = -28
+	panel.offset_bottom = 300
 	panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	panel.add_theme_stylebox_override("panel", _panel_style())
 	layer.add_child(panel)
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 6)
 	panel.add_child(box)
-	var title := UiKit.label("Heavy Boulder", 28)
+	var title := UiKit.label(weapon.display_name if weapon else "SIEGE", 28)
 	box.add_child(title)
 	status_label = UiKit.label("Drag back from the catapult, then release.", 30)
 	box.add_child(status_label)
@@ -69,12 +87,26 @@ func _build_hud() -> void:
 	var row := HBoxContainer.new()
 	row.alignment = BoxContainer.ALIGNMENT_END
 	box.add_child(row)
+	if weapon_choices.size() > 1:
+		var swap := Button.new()
+		swap.text = "Weapon"
+		swap.custom_minimum_size = Vector2(220, 84)
+		swap.theme = UiKit.theme()
+		swap.pressed.connect(_cycle_weapon)
+		row.add_child(swap)
 	var reset := Button.new()
 	reset.text = "Reset"
-	reset.custom_minimum_size = Vector2(240, 84)
+	reset.custom_minimum_size = Vector2(220, 84)
 	reset.theme = UiKit.theme()
 	reset.pressed.connect(reset_battle)
 	row.add_child(reset)
+	if using_sandbox:
+		var back := Button.new()
+		back.text = "Builder"
+		back.custom_minimum_size = Vector2(220, 84)
+		back.theme = UiKit.theme()
+		back.pressed.connect(func() -> void: Game.open_workshop())
+		row.add_child(back)
 
 
 func _panel_style() -> StyleBoxFlat:
@@ -131,6 +163,8 @@ func _on_fired(origin: Vector2, velocity: Vector2) -> void:
 	settle = 0.0
 	catapult.set_aim_enabled(false)
 	var projectile := arena.launch(weapon, origin, velocity)
+	if using_sandbox:
+		projectile.scale_damage(PerkRules.damage_scale(Game.loadout_perk))
 	camera_rig.follow_target = projectile
 	status_label.text = "Shot away."
 	aim_label.text = "Angle %d°    Power %d%%" % [roundi(catapult.angle_degrees), roundi(catapult.power * 100.0)]
@@ -170,6 +204,18 @@ func _on_core_lost() -> void:
 	ImpactFeedback.major(camera_rig)
 
 
+func _cycle_weapon() -> void:
+	if phase != Phase.AIM or weapon_choices.size() < 2:
+		return
+	var index := weapon_choices.find(weapon)
+	weapon = weapon_choices[(index + 1) % weapon_choices.size()]
+	catapult.set_weapon(weapon)
+	if status_label:
+		status_label.text = weapon.display_name
+	if aim_label:
+		aim_label.text = "Angle %d°    Power %d%%" % [roundi(catapult.angle_degrees), roundi(catapult.power * 100.0)]
+
+
 func _refresh_core_label() -> void:
 	if victory:
 		return
@@ -189,7 +235,11 @@ func reset_battle() -> void:
 	arena.clear_dynamic()
 	# queue_free is deferred, so rebuild next frame to avoid overlap with dying bodies
 	await get_tree().process_frame
-	arena.spawn_layout(DemoLayout.timber_outpost())
+	if using_sandbox:
+		arena.defender_perk = Game.loadout_perk
+		arena.spawn_layout(Game.design_lines)
+	else:
+		arena.spawn_layout(DemoLayout.timber_outpost())
 	camera_rig.follow_target = null
 	camera_rig.global_position = camera_rig.home
 	_open_aim()

@@ -5,6 +5,20 @@ var life := 5.5
 var _prev_velocity := Vector2.ZERO
 
 
+static func burst(parent: Node, color: Color, origin: Vector2, base_vel: Vector2, count: int) -> void:
+	if parent == null or not is_instance_valid(parent) or not parent.is_inside_tree():
+		return
+	Catalog.ensure()
+	var room := Catalog.balance.max_debris - parent.get_tree().get_nodes_in_group("debris").size()
+	var amount := mini(count, maxi(room, 0))
+	for _i in amount:
+		var bit := DebrisBit.new()
+		var jitter := Vector2(randf_range(-10, 10), randf_range(-10, 10))
+		var vel := base_vel + Vector2(randf_range(-160, 160), randf_range(-220, -40))
+		parent.add_child(bit)
+		bit.setup(Vector2(16, 14), color, vel, origin + jitter)
+
+
 func setup(size: Vector2, color: Color, vel: Vector2, pos: Vector2) -> void:
 	var shape_node := CollisionShape2D.new()
 	var rect := RectangleShape2D.new()

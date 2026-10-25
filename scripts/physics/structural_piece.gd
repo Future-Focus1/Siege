@@ -139,6 +139,17 @@ func _physics_process(_delta: float) -> void:
 			apply_central_impulse(_pending_impulse)
 		_pending_impulse = Vector2.ZERO
 	_prev_velocity = linear_velocity
+	if Game.wants_debug():
+		queue_redraw()
+
+
+func _draw() -> void:
+	if not Game.wants_debug():
+		return
+	var font := ThemeDB.fallback_font
+	if font == null:
+		return
+	draw_string(font, Vector2(-20, 8), "%dkg %d" % [roundi(mass), roundi(durability)], HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color(1, 1, 1, 0.92))
 
 
 func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
@@ -244,16 +255,9 @@ func _spawn_debris() -> void:
 	var parent := get_parent()
 	if parent == null:
 		return
-	var existing := get_tree().get_nodes_in_group("debris").size()
 	Catalog.ensure()
-	if existing >= Catalog.balance.max_debris:
-		return
 	var mat := Catalog.material(material_id)
 	var color := mat.debris_color if mat else Color.GRAY
 	var count := 2 if not is_core else 4
-	for i in count:
-		var bit := DebrisBit.new()
-		var jitter := Vector2(randf_range(-10, 10), randf_range(-10, 10))
-		var vel := linear_velocity + Vector2(randf_range(-160, 160), randf_range(-220, -40))
-		parent.add_child(bit)
-		bit.setup(Vector2(16, 14), color, vel, global_position + jitter)
+	# Spawning bodies inside a physics callback is illegal, so the bits arrive next idle frame.
+	DebrisBit.burst.call_deferred(parent, color, global_position, linear_velocity, count)

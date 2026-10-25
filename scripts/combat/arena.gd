@@ -6,7 +6,9 @@ signal piece_damaged(piece: StructuralPiece, amount: float)
 signal piece_broke(piece: StructuralPiece)
 
 var pieces: Array[StructuralPiece] = []
+var shields: Array[ShieldField] = []
 var core: StructuralPiece
+var defender_perk: String = ""
 var _support_tick := 0.0
 var _core_announced := false
 const PIECE_SCENE := preload("res://scenes/pieces/structural_piece.tscn")
@@ -61,9 +63,15 @@ func spawn_placement(placement: Placement) -> StructuralPiece:
 	piece.broke.connect(_on_broke.bind(piece))
 	add_child(piece)
 	piece.spawn_position = piece.global_position
+	PerkRules.apply_to_piece(piece, defender_perk)
 	pieces.append(piece)
 	if piece.is_core:
 		core = piece
+	if piece.is_shield:
+		var field := ShieldField.new()
+		piece.add_child(field)
+		field.setup(piece, data, defender_perk)
+		shields.append(field)
 	return piece
 
 
@@ -77,15 +85,16 @@ func launch(data: WeaponData, origin: Vector2, velocity: Vector2) -> Projectile:
 
 func clear_dynamic() -> void:
 	for node in get_tree().get_nodes_in_group("projectile"):
-		if is_instance_valid(node):
+		if node is Node and (node as Node).get_parent() == self:
 			node.queue_free()
 	for node in get_tree().get_nodes_in_group("debris"):
-		if is_instance_valid(node):
+		if node is Node and (node as Node).get_parent() == self:
 			node.queue_free()
 	for piece in pieces:
 		if is_instance_valid(piece):
 			piece.queue_free()
 	pieces.clear()
+	shields.clear()
 	core = null
 	_core_announced = false
 
@@ -101,7 +110,7 @@ func core_defeated() -> bool:
 	var limit := Catalog.balance.core_defeat_distance
 	if core.global_position.distance_to(core.spawn_position) >= limit:
 		return true
-	if core.global_position.y > SiegeGrid.GROUND_Y + 24.0:
+	if core.global_position.y > global_position.y + SiegeGrid.GROUND_Y + 24.0:
 		return true
 	return false
 
@@ -132,6 +141,7 @@ func intact_ratio() -> float:
 
 
 func _physics_process(delta: float) -> void:
+	_tick_shields()
 	_support_tick += delta
 	if _support_tick >= 0.12:
 		_support_tick = 0.0
@@ -165,6 +175,26 @@ func _on_broke(piece: StructuralPiece) -> void:
 	if piece.is_core and not _core_announced:
 		_core_announced = true
 		core_lost.emit()
+
+
+func recharge_shields(virtual_seconds: float) -> void:
+	var live: Array[ShieldField] = []
+	for field in shields:
+		if is_instance_valid(field):
+			field.recharge(virtual_seconds)
+			live.append(field)
+	shields = live
+
+
+func _tick_shields() -> void:
+	if shields.is_empty():
+		return
+	for node in get_tree().get_nodes_in_group("projectile"):
+		if not (node is Projectile) or (node as Node).get_parent() != self:
+			continue
+		for field in shields:
+			if is_instance_valid(field):
+				field.consider(node as Projectile)
 
 
 func refresh_support() -> void:

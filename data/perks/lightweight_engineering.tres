@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="PerkData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/perk_data.gd" id="1_perk"]
+
+[resource]
+script = ExtResource("1_perk")
+id = &"lightweight_engineering"
+display_name = "Lightweight Engineering"
+description = "Timber weighs less, so it loads supports less, and it breaks sooner."
+cost = 2
+advantage = "Wood mass ×0.75"
+drawback = "Wood durability ×0.88"
