@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1_weapon"]
+
+[resource]
+script = ExtResource("1_weapon")
+id = &"piercing_bolt"
+display_name = "Piercing Bolt"
+description = "Fast and frequent. It needles exposed timber and slips through a tired shield."
+mass = 0.55
+damage_multiplier = 0.45
+impact_behavior = "pierce"
+reload_seconds = 4.0
+launch_speed = 1680.0
+cost = 3
+gravity_scale = 1.0
+knockback = 50.0
+projectile_radius = 7.0
+explosion_radius = 0.0
+explosion_impulse = 0.0
+explosion_damage = 0.0
+pierce_count = 3
+shield_drain = 14.0
+strengths = PackedStringArray("exposed weak points", "high rate of fire")
+weaknesses = PackedStringArray("heavy masonry", "low knockback")

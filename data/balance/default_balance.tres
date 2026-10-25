@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="BalanceConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/balance_config.gd" id="1_balance"]
+
+[resource]
+script = ExtResource("1_balance")
+energy_divisor = 6500.0
+min_rel_speed = 110.0
+min_energy = 2500.0
+build_budget = 100
+loadout_budget = 12
+max_battle_seconds = 90.0
+aim_time_limit = 0.0
+max_pieces = 60
+max_debris = 36
+max_resolve_seconds = 7.0
+tie_epsilon = 0.02
+core_defeat_distance = 220.0
+gravity = 1250.0
+cell_size = 64
+build_cols = 8
+build_rows = 12
+support_slip_distance = 32.0

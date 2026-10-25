@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="MaterialData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/material_data.gd" id="1_mat"]
+
+[resource]
+script = ExtResource("1_mat")
+id = &"wood"
+display_name = "Wood"
+density = 0.55
+durability_scale = 0.75
+impact_resistance = 0.7
+explosion_resistance = 0.55
+friction = 0.78
+bounce = 0.06
+cost_scale = 0.75
+color = Color(0.82, 0.541, 0.271, 1)
+debris_color = Color(0.62, 0.36, 0.16, 1)

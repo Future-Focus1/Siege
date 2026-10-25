@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/weapon_data.gd" id="1_weapon"]
+
+[resource]
+script = ExtResource("1_weapon")
+id = &"explosive_shot"
+display_name = "Explosive Shot"
+description = "Bursts on impact. Nasty against a packed frame, wasted on open air."
+mass = 2.6
+damage_multiplier = 0.9
+impact_behavior = "explosive"
+reload_seconds = 6.5
+launch_speed = 1400.0
+cost = 4
+gravity_scale = 1.0
+knockback = 200.0
+projectile_radius = 14.0
+explosion_radius = 230.0
+explosion_impulse = 14000.0
+explosion_damage = 180000.0
+pierce_count = 0
+shield_drain = 40.0
+strengths = PackedStringArray("packed layouts", "area impulse")
+weaknesses = PackedStringArray("dispersed towers", "wasted on empty space")

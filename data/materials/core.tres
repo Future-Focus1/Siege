@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="MaterialData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/material_data.gd" id="1_mat"]
+
+[resource]
+script = ExtResource("1_mat")
+id = &"core"
+display_name = "Keep Core"
+density = 1.2
+durability_scale = 1.0
+impact_resistance = 1.5
+explosion_resistance = 1.2
+friction = 0.85
+bounce = 0.02
+cost_scale = 1.0
+color = Color(0.886, 0.702, 0.227, 1)
+debris_color = Color(0.949, 0.851, 0.4, 1)

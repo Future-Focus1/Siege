@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="PieceData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/piece_data.gd" id="1_piece"]
+
+[resource]
+script = ExtResource("1_piece")
+id = &"reinforced_beam"
+display_name = "Reinforced Beam"
+description = "A metal beam. Expensive, and it holds when timber would fold."
+kind = 4
+base_cost = 10
+fixed_cost = 0
+base_durability = 120.0
+mass_scale = 1.05
+cells = PackedInt32Array(0, 0, 1, 0, 2, 0, 3, 0)
+allowed_materials = PackedStringArray("metal")
+max_count = 16

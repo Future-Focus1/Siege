@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="MaterialData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/material_data.gd" id="1_mat"]
+
+[resource]
+script = ExtResource("1_mat")
+id = &"metal"
+display_name = "Metal"
+density = 2.3
+durability_scale = 1.7
+impact_resistance = 2.4
+explosion_resistance = 1.55
+friction = 0.62
+bounce = 0.05
+cost_scale = 1.7
+color = Color(0.369, 0.608, 0.71, 1)
+debris_color = Color(0.25, 0.447, 0.549, 1)

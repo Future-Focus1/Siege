@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="PieceData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/piece_data.gd" id="1_piece"]
+
+[resource]
+script = ExtResource("1_piece")
+id = &"large_block"
+display_name = "Large Block"
+description = "A heavy two-by-two mass."
+kind = 0
+base_cost = 8
+fixed_cost = 0
+base_durability = 130.0
+mass_scale = 1.0
+cells = PackedInt32Array(0, 0, 1, 0, 0, 1, 1, 1)
+allowed_materials = PackedStringArray("wood", "stone", "metal")
+max_count = 40
