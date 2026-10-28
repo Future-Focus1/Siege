@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="PieceData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/piece_data.gd" id="1_piece"]
+
+[resource]
+script = ExtResource("1_piece")
+id = &"diagonal_brace"
+display_name = "Diagonal Brace"
+description = "A thin brace. It ties a frame together and snaps under a heavy hit."
+kind = 3
+base_cost = 5
+fixed_cost = 0
+base_durability = 50.0
+mass_scale = 0.55
+cells = PackedInt32Array(0, 0, 1, 1, 2, 2)
+allowed_materials = PackedStringArray("wood", "stone", "metal")
+max_count = 30

@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="PerkData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/perk_data.gd" id="1_perk"]
+
+[resource]
+script = ExtResource("1_perk")
+id = &"reinforced_foundations"
+display_name = "Reinforced Foundations"
+description = "Grounded pieces and anchors last longer, and they weigh more."
+cost = 2
+advantage = "Grounded durability ×1.40"
+drawback = "Those pieces are 15% heavier"

@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="PerkData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/perk_data.gd" id="1_perk"]
+
+[resource]
+script = ExtResource("1_perk")
+id = &"siege_master"
+display_name = "Siege Master"
+description = "Hits harder. Takes longer between shots."
+cost = 3
+advantage = "Damage ×1.18"
+drawback = "Reload time ×1.12"

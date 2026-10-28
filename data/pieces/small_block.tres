@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="PieceData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/piece_data.gd" id="1_piece"]
+
+[resource]
+script = ExtResource("1_piece")
+id = &"small_block"
+display_name = "Small Block"
+description = "A single stone, timber, or metal block."
+kind = 0
+base_cost = 4
+fixed_cost = 0
+base_durability = 70.0
+mass_scale = 1.0
+cells = PackedInt32Array(0, 0)
+allowed_materials = PackedStringArray("wood", "stone", "metal")
+max_count = 60

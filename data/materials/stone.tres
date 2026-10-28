@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="MaterialData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/material_data.gd" id="1_mat"]
+
+[resource]
+script = ExtResource("1_mat")
+id = &"stone"
+display_name = "Stone"
+density = 1.7
+durability_scale = 1.25
+impact_resistance = 1.8
+explosion_resistance = 1.35
+friction = 0.95
+bounce = 0.02
+cost_scale = 1.15
+color = Color(0.557, 0.569, 0.612, 1)
+debris_color = Color(0.4, 0.408, 0.447, 1)

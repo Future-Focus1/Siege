@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="PieceData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/piece_data.gd" id="1_piece"]
+
+[resource]
+script = ExtResource("1_piece")
+id = &"vertical_pillar"
+display_name = "Vertical Pillar"
+description = "A tall support. Knock it out and the floors it carries come down."
+kind = 2
+base_cost = 6
+fixed_cost = 0
+base_durability = 80.0
+mass_scale = 0.85
+cells = PackedInt32Array(0, 0, 0, 1, 0, 2)
+allowed_materials = PackedStringArray("wood", "stone", "metal")
+max_count = 30

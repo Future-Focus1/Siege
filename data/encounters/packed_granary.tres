@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="EncounterData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/encounter_data.gd" id="1_enc"]
+
+[resource]
+script = ExtResource("1_enc")
+id = &"packed_granary"
+display_name = "Packed Granary"
+briefing = "Timbers stacked tight. A blast in the middle pulls the whole shed down."
+suggested_difficulty = "normal"
+layout_id = "packed_granary"
+ai_weapons = PackedStringArray("explosive_shot", "piercing_bolt")
+ai_perk = "rapid_reload"
+order = 3

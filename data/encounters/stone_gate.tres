@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="EncounterData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/encounter_data.gd" id="1_enc"]
+
+[resource]
+script = ExtResource("1_enc")
+id = &"stone_gate"
+display_name = "Stone Gate"
+briefing = "Heavy masonry. Boulders shove the pillars. Bolts barely notice them."
+suggested_difficulty = "normal"
+layout_id = "stone_gate"
+ai_weapons = PackedStringArray("heavy_boulder")
+ai_perk = "siege_master"
+order = 2

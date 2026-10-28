@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="EncounterData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/encounter_data.gd" id="1_enc"]
+
+[resource]
+script = ExtResource("1_enc")
+id = &"timber_outpost"
+display_name = "Timber Outpost"
+briefing = "A light wooden keep. Bolts find the gaps. Explosives fold the braces."
+suggested_difficulty = "easy"
+layout_id = "timber_outpost"
+ai_weapons = PackedStringArray("piercing_bolt")
+ai_perk = "marksman"
+order = 1
